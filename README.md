@@ -199,10 +199,11 @@ CDF(x) = 0.5 * I_{df/(df+t²)}(df/2, 1/2)      if t ≤ 0
 
 ## Performance Considerations
 
-- The function uses iterative approximation with a maximum of 200 iterations
+- The function uses iterative approximation with a default maximum of 500 iterations
 - Convergence is typically achieved in fewer than 20 iterations for most inputs
 - Batch processing is efficient due to vectorization
 - Double precision (`torch.float64`) is recommended for gradient checking
+- Precision parameters (`epsilon`, `max_approx`) can be customized for performance tuning
 
 ## Credits
 
