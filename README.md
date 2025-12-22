@@ -1,16 +1,27 @@
 # torch-betainc
 
+[![PyPI version](https://badge.fury.io/py/torch-betainc.svg)](https://pypi.org/project/torch-betainc/)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A differentiable implementation of the regularized incomplete beta function for PyTorch, with full gradient support for all parameters.
 
 ## Features
 
-- **Fully Differentiable**: Compute gradients with respect to all three parameters (a, b, x)
+- **Fully Differentiable**: Compute gradients with respect to all parameters (a, b, x)
 - **Vectorized**: Supports batched computation with tensor inputs
 - **Numerically Stable**: Uses continued fraction expansion with convergence tracking
+- **Configurable Precision**: Adjustable parameters for accuracy/performance trade-off
 - **Well-Tested**: Comprehensive test suite with gradient verification
 - **Easy to Use**: Simple, intuitive API
 
 ## Installation
+
+### From PyPI (recommended)
+
+```bash
+pip install torch-betainc
+```
 
 ### From source
 
@@ -20,10 +31,20 @@ cd torch-betainc
 pip install -e .
 ```
 
-### With development dependencies
+### With optional dependencies
 
 ```bash
-pip install -e ".[dev,examples]"
+# For development (testing)
+pip install torch-betainc[dev]
+
+# For examples (matplotlib, seaborn)
+pip install torch-betainc[examples]
+
+# For notebooks (jupyter, visualization)
+pip install torch-betainc[notebook]
+
+# All optional dependencies
+pip install torch-betainc[dev,examples,notebook]
 ```
 
 ## Quick Start
