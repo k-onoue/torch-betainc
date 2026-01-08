@@ -85,21 +85,34 @@ result = betainc(a, b, x)
 print(result)  # tensor([0.3000, 0.5000, 0.7840])
 ```
 
-### Student's t-Distribution CDF
+### StudentT Distribution Class
 
 ```python
 import torch
-from torch_betainc import cdf_t
+from torch_betainc import StudentT
 
-# Compute CDF of t-distribution
-x = torch.tensor([-2.0, -1.0, 0.0, 1.0, 2.0])
-df = torch.tensor(10.0)
+# Create a Student's t-distribution
+dist = StudentT(df=torch.tensor(5.0))
 
-cdf = cdf_t(x, df)
-print(cdf)  # tensor([0.0366, 0.1718, 0.5000, 0.8282, 0.9634])
+# Sample from the distribution
+samples = dist.sample((1000,))
 
-# With custom location and scale
-cdf = cdf_t(x, df, loc=0.0, scale=2.0)
+# Compute CDF (differentiable!)
+x = torch.tensor([0.0, 1.0, 2.0])
+cdf = dist.cdf(x)
+print(cdf)  # tensor([0.5000, 0.8182, 0.9489])
+
+# Compute log probability
+log_prob = dist.log_prob(x)
+
+# Compute gradients through CDF
+x_grad = torch.tensor(1.0, requires_grad=True)
+df_grad = torch.tensor(5.0, requires_grad=True)
+dist_grad = StudentT(df=df_grad)
+cdf_val = dist_grad.cdf(x_grad)
+cdf_val.backward()
+print(f"∂CDF/∂x = {x_grad.grad}")
+print(f"∂CDF/∂df = {df_grad.grad}")
 ```
 
 ## API Reference
@@ -128,22 +141,43 @@ result = betainc(torch.tensor(2.0), torch.tensor(3.0), torch.tensor(0.5))
 result = betainc(a, b, x, epsilon=1e-12, max_approx=200)
 ```
 
-### `cdf_t(x, df, loc=0.0, scale=1.0)`
+### `StudentT(df, loc=0.0, scale=1.0, validate_args=None)`
 
-Compute the cumulative distribution function of Student's t-distribution.
+Student's t-distribution class with differentiable CDF method.
+
+This class extends PyTorch's distribution interface and provides all standard methods (`sample`, `rsample`, `log_prob`, `entropy`) plus a differentiable `cdf` method.
 
 **Parameters:**
-- `x` (torch.Tensor): The value(s) at which to evaluate the CDF.
-- `df` (torch.Tensor): Degrees of freedom. Must be positive.
-- `loc` (torch.Tensor, optional): Location parameter (mean). Default: 0.0.
-- `scale` (torch.Tensor, optional): Scale parameter. Must be positive. Default: 1.0.
+- `df` (float or torch.Tensor): Degrees of freedom. Must be positive.
+- `loc` (float or torch.Tensor, optional): Location parameter (mean). Default: 0.0.
+- `scale` (float or torch.Tensor, optional): Scale parameter. Must be positive. Default: 1.0.
+- `validate_args` (bool, optional): Whether to validate arguments. Default: None.
 
-**Returns:**
-- `torch.Tensor`: The CDF value(s)
+**Methods:**
+- `sample(sample_shape)`: Generate samples from the distribution.
+- `rsample(sample_shape)`: Generate reparameterized samples (supports gradients).
+- `log_prob(value)`: Compute log probability density.
+- `cdf(value)`: Compute cumulative distribution function (differentiable).
+- `entropy()`: Compute entropy of the distribution.
+
+**Properties:**
+- `mean`: Mean of the distribution (undefined for df ≤ 1).
+- `mode`: Mode of the distribution (equals loc).
+- `variance`: Variance of the distribution (undefined for df ≤ 1, infinite for 1 < df ≤ 2).
 
 **Example:**
 ```python
-cdf = cdf_t(torch.tensor(1.0), torch.tensor(5.0))
+# Create distribution
+dist = StudentT(df=torch.tensor(5.0), loc=torch.tensor(0.0), scale=torch.tensor(1.0))
+
+# Use like any PyTorch distribution
+samples = dist.rsample((100,))
+log_probs = dist.log_prob(samples)
+
+# Compute differentiable CDF
+x = torch.tensor(1.0, requires_grad=True)
+cdf_val = dist.cdf(x)
+cdf_val.backward()  # Gradients flow through CDF!
 ```
 
 ## Examples
@@ -170,6 +204,21 @@ python examples/gradient_verification.py
 ```
 
 This script visually compares analytical gradients (from the custom autograd implementation) with numerical gradients (from finite differences) to verify correctness.
+
+### StudentT Distribution with CDF
+
+```bash
+python examples/studentt_cdf_example.py
+```
+
+This script demonstrates:
+- Creating StudentT distributions
+- Computing differentiable CDF values
+- Gradient computation through CDF
+- Batch computation with multiple distributions
+- Comparison with PyTorch's built-in StudentT
+- Visualization of CDF and PDF
+- Using CDF in optimization problems
 
 ## Testing
 

@@ -4,7 +4,7 @@ Tests for the distribution functions.
 
 import pytest
 import torch
-from torch_betainc import cdf_t
+from torch_betainc.distributions import _cdf_t as cdf_t
 
 
 class TestCdfTBasicProperties:

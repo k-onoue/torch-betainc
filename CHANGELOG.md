@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-01-08
+
+### Added
+- **StudentT Distribution Class**: New `StudentT` class that extends PyTorch's `StudentT` with a differentiable `cdf()` method
+- Comprehensive test suite for `StudentT` class (16 new tests)
+- Example script: `studentt_cdf_example.py` demonstrating StudentT usage with CDF
+- Full documentation for `StudentT` class in README
+
+### Changed
+- **Breaking**: Removed `cdf_t` from public API (now internal as `_cdf_t`)
+- Simplified public API to only export `betainc` and `StudentT`
+- Updated documentation to focus on `StudentT` class instead of standalone `cdf_t` function
+
+### Implementation
+- `StudentT` inherits from `torch.distributions.StudentT` for maximum compatibility
+- Maintains all PyTorch distribution methods (`sample`, `rsample`, `log_prob`, `entropy`)
+- CDF method is fully differentiable with respect to value and all distribution parameters
+
 ## [0.1.0] - 2025-12-22
 
 ### Added
