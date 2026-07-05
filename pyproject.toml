@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "torch-betainc"
-version = "0.2.0"
+version = "0.2.1"
 description = "Differentiable incomplete beta function for PyTorch"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -37,6 +37,7 @@ dependencies = [
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
+    "scipy>=1.7.0",
 ]
 examples = [
     "matplotlib>=3.5.0",

@@ -2,11 +2,7 @@
 Statistical distribution functions using the incomplete beta function.
 """
 
-import math
-from typing import Optional, Union
-
 import torch
-from torch import inf, nan, Tensor
 from torch.distributions import StudentT as _StudentT
 
 from .betainc import betainc
@@ -49,7 +45,16 @@ def _cdf_t(x, df, loc=0.0, scale=1.0):
     )
     
     # Apply the appropriate formula based on the sign of t
-    return torch.where(t > 0, 1.0 - 0.5 * prob, 0.5 * prob)
+    cdf = torch.where(t > 0, 1.0 - 0.5 * prob, 0.5 * prob)
+
+    log_pdf_at_zero = (
+        torch.lgamma((df + 1.0) / 2.0)
+        - torch.lgamma(df / 2.0)
+        - 0.5 * (torch.log(df) + df.new_tensor(3.141592653589793).log())
+    )
+    cdf_at_zero = 0.5 + t * torch.exp(log_pdf_at_zero)
+
+    return torch.where(t == 0, cdf_at_zero, cdf)
 
 
 class StudentT(_StudentT):

@@ -11,12 +11,27 @@
 - [x] Built package successfully
 
 📦 **Build artifacts created:**
-- `dist/torch_betainc-0.1.0.tar.gz` (source distribution)
-- `dist/torch_betainc-0.1.0-py3-none-any.whl` (wheel)
+- `dist/torch_betainc-<version>.tar.gz` (source distribution)
+- `dist/torch_betainc-<version>-py3-none-any.whl` (wheel)
 
 ## Publication Steps
 
-### Step 1: Test Installation Locally
+### Step 1: Configure PyPI Trusted Publishing
+
+This repository publishes to PyPI automatically from `.github/workflows/publish.yml`
+when a `v*` tag is pushed. The workflow uses PyPI Trusted Publishing, so no
+PyPI token or GitHub secret is required.
+
+Configure this once in PyPI:
+
+1. Go to https://pypi.org/manage/account/publishing/
+2. Add a publisher for project `torch-betainc`
+3. Use GitHub owner `k-onoue`
+4. Use repository name `torch-betainc`
+5. Use workflow name `publish.yml`
+6. Use environment name `pypi`
+
+### Step 2: Test Installation Locally
 
 Test the built package in a clean environment:
 
@@ -26,18 +41,21 @@ python -m venv test_env
 source test_env/bin/activate
 
 # Install from wheel
-pip install dist/torch_betainc-0.1.0-py3-none-any.whl
+pip install dist/torch_betainc-*.whl
 
 # Test import
-python -c "from torch_betainc import betainc, cdf_t; print('✓ Import successful')"
+python -c "from torch_betainc import betainc, StudentT; print('✓ Import successful')"
 
 # Run a quick test
 python -c "
 import torch
-from torch_betainc import betainc
+from torch_betainc import betainc, StudentT
 result = betainc(torch.tensor(2.0), torch.tensor(3.0), torch.tensor(0.5))
 print(f'betainc(2, 3, 0.5) = {result.item():.4f}')
 assert abs(result.item() - 0.6875) < 0.001, 'Test failed!'
+dist = StudentT(df=torch.tensor(5.0))
+cdf = dist.cdf(torch.tensor(1.0))
+assert 0.0 < cdf.item() < 1.0, 'StudentT CDF test failed!'
 print('✓ Basic test passed')
 "
 
@@ -46,73 +64,33 @@ deactivate
 rm -rf test_env
 ```
 
-### Step 2: Publish to TestPyPI (Optional but Recommended)
+### Step 3: Publish to PyPI Automatically
 
-TestPyPI is a separate instance of PyPI for testing purposes.
-
-```bash
-# Activate your environment
-source .venv-betainc/bin/activate
-
-# Upload to TestPyPI
-python -m twine upload --repository testpypi dist/*
-
-# You'll be prompted for:
-# - Username: __token__
-# - Password: your TestPyPI API token
-```
-
-**Get TestPyPI token:**
-1. Go to https://test.pypi.org/manage/account/
-2. Scroll to "API tokens"
-3. Click "Add API token"
-4. Name it (e.g., "torch-betainc")
-5. Copy the token (starts with `pypi-`)
-
-**Test installation from TestPyPI:**
+Once the version has been updated and the release commit is on `main`, push a
+release tag:
 
 ```bash
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ torch-betainc
+git tag v0.2.1
+git push origin v0.2.1
 ```
 
-Note: `--extra-index-url` is needed because dependencies (like PyTorch) are on the main PyPI.
+The GitHub Actions workflow will then:
 
-### Step 3: Publish to PyPI
+- run the test suite
+- build the source distribution and wheel
+- publish the artifacts to PyPI
 
-Once you've verified everything works:
-
-```bash
-# Activate your environment
-source .venv-betainc/bin/activate
-
-# Upload to PyPI
-python -m twine upload dist/*
-
-# You'll be prompted for:
-# - Username: __token__
-# - Password: your PyPI API token
-```
-
-**Get PyPI token:**
-1. Go to https://pypi.org/manage/account/
-2. Scroll to "API tokens"
-3. Click "Add API token"
-4. Scope: "Entire account" or specific to this project
-5. Name it (e.g., "torch-betainc")
-6. Copy the token (starts with `pypi-`)
-
-**⚠️ Important:** Save your API token securely! You won't be able to see it again.
+PyPI versions are immutable, so make sure `pyproject.toml` and
+`torch_betainc/__init__.py` contain a version that has not been uploaded before.
 
 ### Step 4: Verify Publication
 
-After publishing:
+After the workflow succeeds:
 
 ```bash
-# Wait a few minutes, then install from PyPI
 pip install torch-betainc
 
-# Test it works
-python -c "from torch_betainc import betainc; print('✓ Installed from PyPI successfully')"
+python -c "from torch_betainc import betainc, StudentT; print('✓ Installed from PyPI successfully')"
 ```
 
 Check your package page: https://pypi.org/project/torch-betainc/
@@ -121,11 +99,10 @@ Check your package page: https://pypi.org/project/torch-betainc/
 
 1. Go to https://github.com/k-onoue/torch-betainc/releases
 2. Click "Create a new release"
-3. Tag: `v0.1.0`
-4. Title: `v0.1.0 - Initial Release`
+3. Tag: `v0.2.1`
+4. Title: `v0.2.1`
 5. Description: Copy from CHANGELOG.md
-6. Attach the built files from `dist/`
-7. Publish release
+6. Publish release
 
 ## Post-Publication
 
@@ -180,8 +157,14 @@ The deprecation warnings about `project.license` format are non-critical. They c
 If you get "File already exists" error:
 - You can't re-upload the same version
 - Increment version number in pyproject.toml
-- Rebuild: `python -m build`
-- Upload again
+- Update `torch_betainc/__init__.py`
+- Create and push a new release tag
+
+### Trusted Publishing Errors
+
+If the workflow fails with a trusted publisher error, check the PyPI publisher
+settings. The project name, GitHub owner, repository, workflow filename, and
+environment name must match the workflow exactly.
 
 ### Installation Issues
 
@@ -197,8 +180,8 @@ When releasing updates:
 1. Update version in `pyproject.toml`
 2. Update `CHANGELOG.md`
 3. Update `__version__` in `torch_betainc/__init__.py`
-4. Rebuild: `python -m build`
-5. Upload: `python -m twine upload dist/*`
+4. Commit and push the changes to `main`
+5. Create and push a `v*` tag, for example `git tag v0.2.1 && git push origin v0.2.1`
 6. Create GitHub release
 
 ## Resources
@@ -206,4 +189,4 @@ When releasing updates:
 - PyPI: https://pypi.org/
 - TestPyPI: https://test.pypi.org/
 - Packaging Guide: https://packaging.python.org/
-- Twine docs: https://twine.readthedocs.io/
+- PyPI Trusted Publishing: https://docs.pypi.org/trusted-publishers/

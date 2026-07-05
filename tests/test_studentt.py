@@ -4,7 +4,6 @@ Tests for the StudentT distribution class with CDF method.
 
 import pytest
 import torch
-import numpy as np
 from scipy import stats
 
 from torch_betainc import StudentT
@@ -116,6 +115,18 @@ class TestStudentT:
 
         # Gradient should approximately equal the PDF
         pdf_val = torch.exp(dist.log_prob(x))
+        assert abs(x.grad.item() - pdf_val.item()) < 1e-4
+
+    def test_cdf_gradient_x_at_location(self):
+        """Test that the CDF gradient at the location equals the PDF."""
+        df = torch.tensor(5.0)
+        x = torch.tensor(0.0, requires_grad=True)
+
+        dist = StudentT(df=df)
+        cdf_val = dist.cdf(x)
+        cdf_val.backward()
+
+        pdf_val = torch.exp(dist.log_prob(x.detach()))
         assert abs(x.grad.item() - pdf_val.item()) < 1e-4
 
     def test_cdf_gradient_df(self):

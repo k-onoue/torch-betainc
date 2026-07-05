@@ -10,12 +10,17 @@ Adapted from the original verification code by Arthur Zwaenepoel.
 import torch
 import matplotlib.pyplot as plt
 import seaborn as sns
-from torch_betainc import cdf_t
+from torch_betainc import StudentT
 
 
 # Set a consistent data type and a small epsilon for finite differences
 DTYPE = torch.float64
 EPS = 1e-6
+
+
+def studentt_cdf(x, df, loc, scale):
+    """Compute the StudentT CDF through the public torch_betainc API."""
+    return StudentT(df=df, loc=loc, scale=scale).cdf(x)
 
 
 def verify_gradients(params, param_key_to_check):
@@ -36,7 +41,7 @@ def verify_gradients(params, param_key_to_check):
                 for k, v in params.items()}
     
     # Run the forward pass
-    cdf_val = cdf_t(**t_params)
+    cdf_val = studentt_cdf(**t_params)
     
     # Run the backward pass to compute gradients
     cdf_val.backward()
@@ -57,8 +62,8 @@ def verify_gradients(params, param_key_to_check):
     t_params_minus = {k: torch.tensor(v, dtype=DTYPE) for k, v in params_minus.items()}
 
     # Compute the CDF at these two perturbed points
-    cdf_plus = cdf_t(**t_params_plus)
-    cdf_minus = cdf_t(**t_params_minus)
+    cdf_plus = studentt_cdf(**t_params_plus)
+    cdf_minus = studentt_cdf(**t_params_minus)
     
     # The centered finite difference formula: (f(x+h) - f(x-h)) / 2h
     numerical_grad = (cdf_plus - cdf_minus) / (2 * EPS)

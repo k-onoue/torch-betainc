@@ -32,7 +32,7 @@ Based on the implementation by Arthur Zwaenepoel:
 https://github.com/arzwa/IncBetaDer
 """
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __author__ = "Keisuke Onoue"
 __credits__ = "Arthur Zwaenepoel"
 

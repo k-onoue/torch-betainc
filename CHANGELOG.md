@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-07-05
+
+### Changed
+- Removed the redundant `requirements.txt` in favor of `pyproject.toml` dependency metadata
+- Updated examples and publication docs to use the public `StudentT` API instead of the removed package-level `cdf_t`
+- Added `scipy` to the `dev` optional dependencies because the test suite compares against SciPy
+- Added GitHub Actions publishing via PyPI Trusted Publishing on `v*` tag pushes
+
+### Fixed
+- Fixed `StudentT.cdf()` gradients at the distribution location so `dCDF/dx` matches the PDF
+
 ## [0.2.0] - 2026-01-08
 
 ### Added

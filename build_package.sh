@@ -7,6 +7,8 @@ echo "=========================================="
 echo "Building torch-betainc package"
 echo "=========================================="
 
+VERSION=$(grep -m1 '^version = ' pyproject.toml | cut -d '"' -f2)
+
 # Clean previous builds
 echo "Cleaning previous builds..."
 rm -rf build/ dist/ *.egg-info torch_betainc.egg-info
@@ -31,12 +33,10 @@ echo ""
 echo "1. Test installation in clean environment:"
 echo "   python -m venv test_env"
 echo "   source test_env/bin/activate"
-echo "   pip install dist/torch_betainc-0.1.0-py3-none-any.whl"
-echo "   python -c 'from torch_betainc import betainc; print(betainc)'"
+echo "   pip install dist/torch_betainc-*.whl"
+echo "   python -c 'from torch_betainc import betainc, StudentT; print(betainc, StudentT)'"
 echo ""
-echo "2. Publish to TestPyPI (optional):"
-echo "   python -m twine upload --repository testpypi dist/*"
-echo ""
-echo "3. Publish to PyPI:"
-echo "   python -m twine upload dist/*"
+echo "2. Publish to PyPI via GitHub Actions:"
+echo "   git tag v${VERSION}"
+echo "   git push origin v${VERSION}"
 echo ""

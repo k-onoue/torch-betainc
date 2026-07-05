@@ -1,12 +1,12 @@
 """
 Basic usage examples for torch_betainc package.
 
-This script demonstrates how to use the betainc and cdf_t functions
-for computing the incomplete beta function and t-distribution CDF.
+This script demonstrates how to use the betainc function and StudentT
+distribution for computing the incomplete beta function and t-distribution CDF.
 """
 
 import torch
-from torch_betainc import betainc, cdf_t
+from torch_betainc import betainc, StudentT
 
 
 def example_betainc_single():
@@ -70,7 +70,7 @@ def example_betainc_edge_cases():
     print()
 
 
-def example_cdf_t_single():
+def example_studentt_cdf_single():
     """Example: Computing t-distribution CDF."""
     print("=" * 60)
     print("Example 4: Student's t-Distribution CDF")
@@ -79,8 +79,9 @@ def example_cdf_t_single():
     x = torch.tensor(0.0, requires_grad=True)
     df = torch.tensor(5.0, requires_grad=True)
     
-    result = cdf_t(x, df)
-    print(f"cdf_t(x={x.item()}, df={df.item()}) = {result.item():.6f}")
+    dist = StudentT(df=df)
+    result = dist.cdf(x)
+    print(f"StudentT(df={df.item()}).cdf(x={x.item()}) = {result.item():.6f}")
     print("(Should be 0.5 at x=0 for symmetric distribution)")
     
     # Compute gradients
@@ -91,7 +92,7 @@ def example_cdf_t_single():
     print()
 
 
-def example_cdf_t_batch():
+def example_studentt_cdf_batch():
     """Example: Batch computation of t-distribution CDF."""
     print("=" * 60)
     print("Example 5: Batch t-Distribution CDF")
@@ -100,7 +101,8 @@ def example_cdf_t_batch():
     x = torch.tensor([-2.0, -1.0, 0.0, 1.0, 2.0])
     df = torch.tensor(10.0)
     
-    result = cdf_t(x, df)
+    dist = StudentT(df=df)
+    result = dist.cdf(x)
     
     print(f"t-distribution CDF with df={df.item()}:")
     for i in range(len(x)):
@@ -108,7 +110,7 @@ def example_cdf_t_batch():
     print()
 
 
-def example_cdf_t_with_location_scale():
+def example_studentt_cdf_with_location_scale():
     """Example: t-distribution with custom location and scale."""
     print("=" * 60)
     print("Example 6: t-Distribution with Location and Scale")
@@ -119,7 +121,8 @@ def example_cdf_t_with_location_scale():
     loc = torch.tensor(5.0)  # Mean
     scale = torch.tensor(2.0)  # Standard deviation
     
-    result = cdf_t(x, df, loc, scale)
+    dist = StudentT(df=df, loc=loc, scale=scale)
+    result = dist.cdf(x)
     
     print(f"t-distribution CDF with df={df.item()}, loc={loc.item()}, scale={scale.item()}:")
     for i in range(len(x)):
@@ -156,9 +159,9 @@ if __name__ == "__main__":
     example_betainc_single()
     example_betainc_batch()
     example_betainc_edge_cases()
-    example_cdf_t_single()
-    example_cdf_t_batch()
-    example_cdf_t_with_location_scale()
+    example_studentt_cdf_single()
+    example_studentt_cdf_batch()
+    example_studentt_cdf_with_location_scale()
     example_broadcasting()
     
     print("=" * 60)
